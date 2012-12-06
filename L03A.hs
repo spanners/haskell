@@ -7,16 +7,23 @@ import Data.Char
 -- writeFile
 
 -- * Building instructions vs running instructions
--- Instructions, and the result of Running the instructions are *not* the same
+-- _Instructions_ themselves, and the result of _Running_ the instructions are *not* the same
 -- You should think of IO as a special, abstract type representing instructions
+
+-- Who gets to run instructions? Nobody. The only way it can be run is if it is the top-level value.
+-- If the IO type reaches the top-level does the runtime run the instruction.
+
 -- instructions with results:
 
--- readFile
 
 -- building complex instructions from simple ones
 
-copyFile :: FilePath -> FilePath -> IO()
+copyFile :: FilePath -> FilePath -> IO ()
 copyFile fromFile toFile = 
+  -- here you are getting a string from an IO String, but you're doing it INSIDE a `do`.
+  -- So the only thing you can return is an IO ().
+  -- readFile returns IO String,
+  -- writeFile 2nd argument has to be a string.
    do c <- readFile fromFile 
       writeFile toFile c
 
