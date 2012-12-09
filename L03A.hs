@@ -10,8 +10,8 @@ import Data.Char
 -- _Instructions_ themselves, and the result of _Running_ the instructions are *not* the same
 -- You should think of IO as a special, abstract type representing instructions
 
--- Who gets to run instructions? Nobody. The only way it can be run is if it is the top-level value.
--- If the IO type reaches the top-level does the runtime run the instruction.
+-- Who gets to run instructions? Nobody. The only way they can be run is if it is the top-level value.
+-- Only If the IO type reaches the top-level does the runtime run the instruction.
 
 -- instructions with results:
 
@@ -25,10 +25,13 @@ copyFile fromFile toFile =
   -- readFile returns IO String,
   -- writeFile 2nd argument has to be a string.
    do c <- readFile fromFile 
+      -- the type of the last line will be the type of the result
+      -- here it is IO ()
       writeFile toFile c
 
 -- var <- expr 
 -- var :: a  expr :: IO 
+-- this returns something of type IO a
 
 -- find longest Word in "/usr/share/dict/words"
 longest :: IO String
@@ -36,9 +39,8 @@ longest = do
         wlist <- readFile "/usr/share/dict/words"
         return (long wlist)
 
-  where long :: String -> String
-        long  = snd . maximum . map (\w -> (length w, w)) . words
-
+  where long :: (Int, String) -> String
+        long  =  maximum . map (\w -> (length w, w)) . words
 -- dotwice
 
 dotwice :: IO a -> IO (a,a)
