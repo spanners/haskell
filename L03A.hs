@@ -83,5 +83,3 @@ forLoop :: [a] -> (a -> IO ()) -> IO ()
 forLoop = undefined 
 -- e.g. forLoop [1..10] print 
 -- will print numbers from 1 to 10.
-
-
