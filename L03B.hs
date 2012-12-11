@@ -22,6 +22,15 @@ dont io = return ()
 -- QC can perform random testing with values of any type which is in class Arbitrary
 -- For any type `a` in Arbitrary there is a random value generator, `Gen a`
 
+-- IO verses Gen
+-- IO A gives instructions to build a value of type A by interacting with the operating system
+-- Gen A gives instructions to create a random value of type A
+
+-- IO A is run by the ghc runtime system
+-- Gen A is run by other functions in the QuickCheck library
+
+
+
 -- examples print getLine
 -- types 
 
