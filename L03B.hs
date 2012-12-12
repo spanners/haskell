@@ -7,7 +7,7 @@ module L03B where
 --------------------------
 import Test.QuickCheck 
 import Data.List(nub,insert,sort)
-import Control.Monad(liftM) -- fmap
+import Control.Monad(liftM2) -- fmap
 
 --------------------------
 
@@ -80,50 +80,44 @@ rSuit = elements [Spades,Hearts, Diamonds,Clubs]
 
 data Rank = Numeric Integer | Jack | Queen | King | Ace
                              deriving (Show,Eq,Ord)
-
-rRank = elements $ map Numeric [2..10] 
-               ++ [Jack , Queen , King , Ace]
-
+                                      
 rRoyal = elements [Jack , Queen , King , Ace]
 
-rNumeric = do 
-         n <- choose(2,10)
-         return $ Numeric n
+rNumeric = fmap Numeric $ choose(2,10)
+
+rRank = oneof [rRoyal,rNumeric]
 
 instance Arbitrary Rank where
   arbitrary = frequency [(4,rRoyal),(9,rNumeric)]
 
+prop_Rank'' r = classify (r < Jack) "Numeric" $ prop_Rank r
 prop_Rank' r = collect r $ prop_Rank r
-prop_Rank (Numeric n) = n > 1 && n < 11
+prop_Rank (Numeric n) = n >= 2 && n <= 10
 prop_Rank _           = True
 
 data Card = Card Rank Suit   
   deriving (Show,Eq)
 
 instance Arbitrary Card where
-   arbitrary = do
+   arbitrary = liftM2 Card arbitrary arbitrary
+{-     
+     do
              r <- arbitrary
              s <- arbitrary
              return $ Card r s
-
+-}
 data Hand = Empty | Add Card Hand 
    deriving (Show,Eq)
 
+fromHand Empty = []
+fromHand (Add c h) = c : fromHand h
+
+toHand = foldr Add Empty
+
 instance Arbitrary Hand where
-  arbitrary = do 
-            cs <- arbitrary
-            return $ makeHand cs  -- liftM makeHand arbitrary
-       where 
-        makeHand [] = Empty
-        makeHand (c:cs) = Add c (makeHand $ filter (/= c) cs)
-
-prop_Hand h = cs == nub cs where cs = cards h
-
--- listToHand
-cards :: Hand -> [Card]
-cards Empty = []
-cards (Add c h) = c:cards h
-
+  arbitrary = fmap (toHand . nub) $ listOf arbitrary
+  
+prop_Hand h = cs == nub cs where cs = fromHand h
 
 --------------------------------------------------------------
 
@@ -147,18 +141,18 @@ insert x (y:ys)          = y:insert x ys
 
 -}
 
-prop_insert x xs  = classify (length xs < 2) "Trivial" $ 
-            sorted xs ==> sorted $ insert x xs 
+prop_insert x xs  = 
+    classify (length xs < 2) "Trivial" $ 
+    collect (length xs) $
+    sorted xs ==> sorted $ insert x xs 
   where types = x :: Integer
 
 sorted xs = xs == sort xs -- inefficient! 
 -- Exercise: define an O(n) version
 -- Harder Exercise: define it without recursion (hint: zipWith)
 
-data OrderedI = OrderedI [Integer]
-  deriving Show
--- one would normally use "newtype" rather than 
--- "data" but the difference is only efficiency.
+newtype OrderedI = OrderedI [Integer]
+  deriving (Eq,Show)
 
 instance Arbitrary OrderedI where
   arbitrary = do
@@ -167,7 +161,8 @@ instance Arbitrary OrderedI where
             -- inefficient again. See slides for an O(n) version
             -- Exercise: redefine using liftM instead of do...
 
-prop_insert2 x (OrderedI xs)  = classify (length xs < 2) "Trivial" $ 
+prop_insert2 x (OrderedI xs)  = collect (length xs) $ 
+                                classify (length xs < 2) "Trivial" $ 
                                 sorted xs ==> 
                                   sorted $ insert x xs 
                    where types = x :: Integer
