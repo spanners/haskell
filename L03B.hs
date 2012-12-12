@@ -39,27 +39,26 @@ dont io = return ()
 
 -- natural numbers
 nats :: Gen Integer
-nats = do
+nats =  fmap abs arbitrary 
+{-  do
      n <- arbitrary
      return $ abs n
-
+-}
 evenInts :: Gen Integer
+evenInts = fmap (*2) arbitrary
+{-
 evenInts = do 
          n <- arbitrary
          return $ 2 * n
+-}
 
 oddInts :: Gen Integer
-oddInts = liftM (1+) evenInts
+oddInts = fmap (+1) evenInts
 {-
          do 
          i <- evenInts
          return $ i + 1
- -}
--- even numbers
-
--- pattern: liftM / fmap
-
-
+-}
 
 -- Building Generators
 -- listOf, vectorOf
