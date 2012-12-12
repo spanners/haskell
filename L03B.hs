@@ -25,17 +25,14 @@ dont io = return ()
 -- IO verses Gen
 -- IO A gives instructions to build a value of type A by interacting with the operating system
 -- Gen A gives instructions to create a random value of type A
-
 -- IO A is run by the ghc runtime system
 -- Gen A is run by other functions in the QuickCheck library
 
+-- sample, sample'
+-- `sample` allows you to inspect generators
+-- `sample'` formats this into a list -- useful when there's lots of print out
 
-
--- examples print getLine
--- types 
-
--- Gen A
--- sample
+-- verboseCheck is just like quickCheck, but shows you the tests generated
 
 -- writing generators
 -- using return, do
@@ -43,14 +40,15 @@ dont io = return ()
 -- natural numbers
 nats :: Gen Integer
 nats = do
-     i <- arbitrary
-     return $ abs i
+     n <- arbitrary
+     return $ abs n
 
 evenInts :: Gen Integer
 evenInts = do 
-         i <- arbitrary
-         return $ 2 * i
+         n <- arbitrary
+         return $ 2 * n
 
+oddInts :: Gen Integer
 oddInts = liftM (1+) evenInts
 {-
          do 
