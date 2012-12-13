@@ -161,10 +161,10 @@ instance Arbitrary OrderedI where
             -- inefficient again. See slides for an O(n) version
             -- Exercise: redefine using liftM instead of do...
 
-prop_insert2 x (OrderedI xs)  = collect (length xs) $ 
+prop_insert2 x (OrderedI xs)  = sorted xs ==>
+                                collect (length xs) $ 
                                 classify (length xs < 2) "Trivial" $ 
-                                sorted xs ==> 
-                                  sorted $ insert x xs 
+                                sorted $ insert x xs 
                    where types = x :: Integer
 
 -- Note that QuickCheck has a predefined generator for ordered lists
