@@ -20,30 +20,17 @@ value (Add (Card Ace _) h) -- The value of an Ace depends on the value of the re
                       rest = value h
 value (Add c h) = valueCard c + value h
 
-{-
--- given a hand, determine the number of aces
-numberOfAces :: Hand -> Integer
-numberOfAces Empty     = 0
-numberOfAces (Add (Card Ace _) h) = 1 + numberOfAces h
-numberOfAces (Add c h) = numberOfAces h
-
-prop_NumberOfAces h = numberOfAces h == (acesIn $ fromHand h)
-  where acesIn []                = 0
-        acesIn ((Card Ace _):cs) = 1 + acesIn cs
-        acesIn (_:cs)            = acesIn cs
- -}   
-
 -- given a card, calculate it's value
 valueCard :: Card -> Integer
 valueCard (Card r _) = valueRank r
 
-prop_ValueCardSane 
-  (Card Ace s)         = valueCard (Card Ace s)         == 11
-prop_ValueCardSane 
-  (Card (Numeric r) s) = valueCard (Card (Numeric r) s) == unpack (Numeric r) 
-  where 
-    unpack (Numeric r) = r
-prop_ValueCardSane c   = valueCard c                    == 10
+prop_ValueCardSane  (Card Ace s) 
+  = valueCard (Card Ace s)         == 11
+prop_ValueCardSane (Card (Numeric r) s) 
+  = valueCard (Card (Numeric r) s) == unpack (Numeric r) 
+    where unpack (Numeric r) = r
+prop_ValueCardSane c 
+  = valueCard c                    == 10
 
 -- given a rank, calculate it's value
 valueRank :: Rank -> Integer
@@ -100,7 +87,7 @@ fullNums s = toHand $ map (\x -> (Card (Numeric x) s)) [2..10]
 
 -- draw a card into the players hand from the deck, and return the new values of (hand, deck)
 draw :: Hand -> Hand -> (Hand, Hand)
-draw Empty _   = error "draw: The deck is empty"
+draw Empty _       = error "draw: The deck is empty"
 draw (Add c h1) h2 = (h1, (Add c h2))
 
 -- play a bank move according to the rules of Black Jack
@@ -122,12 +109,12 @@ removeCard Empty 0 = error "removeCard: card not in hand"
 removeCard hand  n = removeCard' Empty hand n
 
 
--- a helper function for removeCard which builds the remaining_hand into before
+-- a helper function for removeCard which builds the remaining_hand into remainder
 removeCard' :: Hand -> Hand -> Integer -> (Card, Hand)
-removeCard' before (Add c h) 0 = (c, (before    <+ h))
-removeCard' before (Add c Empty) n =  (c, before)
-removeCard' before (Add c h) n = removeCard' 
-                                 ((Add c Empty) <+ before) h (n-1)
+removeCard' remainder (Add c h)     0 = (c, (remainder     <+ h))
+removeCard' remainder (Add c Empty) n = (c, remainder)
+removeCard' remainder (Add c h)     n = removeCard' 
+                                            ((Add c Empty) <+ remainder) h (n-1)
                                  
 -- given a PRNG and a hand, shuffle the hand
 shuffle :: StdGen -> Hand -> Hand
@@ -137,9 +124,9 @@ shuffle g h     = shuffle' g Empty h
 -- a helper function for shuffle which stores the shuffled result so far
 shuffle':: StdGen -> Hand -> Hand -> Hand
 shuffle' g result Empty = result
-shuffle' g result curr = shuffle' g' ((Add c Empty) <+ result) h 
-  where (n,g') = randomR(0, (size curr)) g
-        (c,h) = removeCard curr n
+shuffle' g result curr  = shuffle' g' ((Add c Empty) <+ result) h 
+  where (n,g') = randomR    (0, (size curr)) g
+        (c,h)  = removeCard curr n
 
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
 prop_shuffle_sameCards g c h =
