@@ -110,10 +110,15 @@ twoRandomIntegers g = (n1, n2)
         (n2, g2) = randomR(0,10) g1
         
 
-{-
+
 -- removes the nth card from the hand and returns the card and the remaining hand
 removeCard :: Hand -> Integer -> (Card, Hand)
-removeCard Empty     0 -> error "removeCard: card not in hand"
-removeCard hand
-removeCard
--}
+removeCard Empty 0 = error "removeCard: card not in hand"
+removeCard hand  n = removeCard' Empty hand n
+
+
+--             Before  Current n
+removeCard' :: Hand -> Hand -> Integer -> (Card, Hand)
+removeCard' before (Add c h) 0 = (c, (before    <+ h))
+removeCard' before (Add c h) n = removeCard' 
+                                 ((Add c Empty) <+ before) h (n-1)
