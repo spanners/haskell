@@ -35,8 +35,7 @@ runGame i = do
 gameLoop :: Interface -> Hand -> Hand -> IO ()
 gameLoop i deck guest = do
   putStrLn ("Your current score: " ++ show (iValue i guest))
-  if iGameOver i guest then do
-    finish i deck guest
+  if iGameOver i guest then finish i deck guest
    else do
     putStrLn "Draw another card? [y]"
     yn <- getLine

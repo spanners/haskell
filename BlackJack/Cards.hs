@@ -73,5 +73,4 @@ instance Arbitrary StdGen where
                  
 fromHand Empty = []
 fromHand (Add c h) = c : fromHand h
-toHand [] = Empty
-toHand (c:h) = (Add c $ toHand h)
+toHand = foldr Add Empty

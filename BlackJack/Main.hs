@@ -56,7 +56,7 @@ prop_ValueCardSane c
 
 main :: IO Bool
 runTests = $(quickCheckAll)
-main = do runTests
+main = runTests
 
 ------------------------------------------------------------
 
