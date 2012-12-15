@@ -49,12 +49,14 @@ data Hand = Empty | Add Card Hand
 -- the lecture.
 
 instance Arbitrary Hand where
-  arbitrary = frequency [  (1,  return Empty)
-                        ,  (10, do card  <-  arbitrary
-                                   hand  <-  arbitrary
-                                   return (Add card hand))
-                        ]
-
+  arbitrary =
+    do cs <- arbitrary
+       let hand []     = Empty
+           hand (c:cs) = Add c (hand [ c' | c' <- cs, c' /= c ])
+       return (hand cs)
+  shrink Empty = []
+  shrink (Add c h) = h : map (Add c) (shrink h)
+  
 -- The size of a hand.
 
 size :: Num a => Hand -> a
@@ -68,3 +70,8 @@ size (Add card hand)  = 1 + size hand
 instance Arbitrary StdGen where
   arbitrary = do n <- arbitrary
                  return (mkStdGen n)
+                 
+fromHand Empty = []
+fromHand (Add c h) = c : fromHand h
+toHand [] = Empty
+toHand (c:h) = (Add c $ toHand h)

@@ -1,4 +1,5 @@
 module BlackJack where
+import Test.QuickCheck
 import Cards
 import Wrapper
 
@@ -29,9 +30,6 @@ prop_NumberOfAces h = numberOfAces h == (acesIn $ fromHand h)
         acesIn ((Card Ace _):cs) = 1 + acesIn cs
         acesIn (_:cs)            = acesIn cs
     
-fromHand Empty = []
-fromHand (Add c h) = c : fromHand h
-
 
 -- given a card, calculate it's value
 valueCard :: Card -> Integer
@@ -67,12 +65,33 @@ prop_Winner (Add (Card Ace Spades) (Add (Card Ace Clubs) Empty)) b = winner (Add
 
 -- given two hands, <+ puts the first one on top of the second one
 (<+) :: Hand -> Hand -> Hand
-Empty       <+ Empty         = Empty
-(Add c h)   <+ Empty         = (Add c h)
-Empty       <+ (Add c h)     = (Add c h)
-(Add c1 h1) <+ (Add c2 h2)   = (Add c1 <+ h1 ((Add c2 <+ h2) Empty))
+h             <+ Empty = h
+Empty         <+ h     = h
+(Add c h1)    <+ h2    = (Add c (h1 <+ h2))
+
 
 prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
 prop_onTopOf_assoc p1 p2 p3 = p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
 
 prop_onTopOf_append h1 h2 = fromHand h1 ++ fromHand h2 == fromHand (h1 <+ h2)
+
+prop_size_onTopOf :: Hand -> Hand -> Bool
+prop_size_onTopOf h1 h2 = size h1 + size h2 == size (h1 <+ h2)
+
+fullDeck :: Hand
+fullDeck = fullHand Hearts <+ (fullHand Spades <+ (fullHand Diamonds <+ fullHand Clubs))
+
+fullHand :: Suit -> Hand
+fullHand s = fullNums s <+ (Add (Card Jack s)
+                            (Add (Card King s)
+                             (Add (Card Queen s)
+                              (Add (Card Ace s) Empty))))
+
+fullNums :: Suit -> Hand
+fullNums s = toHand $ map (\x -> (Card (Numeric x) s)) [2..10]
+
+draw :: Hand -> Hand -> (Hand, Hand)
+draw Empty _   = error "draw: The deck is empty"
+draw (Add c h1) h2 = (h1, (Add c h2))
+
+playBank :: Hand -> Hand
