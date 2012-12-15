@@ -20,6 +20,7 @@ value (Add (Card Ace _) h) -- The value of an Ace depends on the value of the re
                       rest = value h
 value (Add c h) = valueCard c + value h
 
+{-
 -- given a hand, determine the number of aces
 numberOfAces :: Hand -> Integer
 numberOfAces Empty     = 0
@@ -30,7 +31,7 @@ prop_NumberOfAces h = numberOfAces h == (acesIn $ fromHand h)
   where acesIn []                = 0
         acesIn ((Card Ace _):cs) = 1 + acesIn cs
         acesIn (_:cs)            = acesIn cs
-    
+ -}   
 
 -- given a card, calculate it's value
 valueCard :: Card -> Integer
@@ -62,10 +63,6 @@ winner :: Hand -> Hand -> Player
 winner g b | gameOver g = Bank
 winner g b = if value g > value b then Guest
              else Bank
-
-{- doesn't work yet...
-prop_Winner (Add (Card Ace Spades) (Add (Card Ace Clubs) Empty)) b = winner (Add (Card Ace Spaces) (Add (Card Ace Clubs) Empty)) b
--}
 
 -- given two hands, <+ puts the first one on top of the second one
 (<+) :: Hand -> Hand -> Hand
