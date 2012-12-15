@@ -23,23 +23,12 @@ value (Add c h) = valueCard c + value h
 valueCard :: Card -> Integer
 valueCard (Card r _) = valueRank r
 
-prop_ValueCardSane  (Card Ace s) 
-  = valueCard (Card Ace s)         == 11
-prop_ValueCardSane (Card (Numeric r) s) 
-  = valueCard (Card (Numeric r) s) == unpack (Numeric r) 
-    where unpack (Numeric r) = r
-prop_ValueCardSane c 
-  = valueCard c                    == 10
-
 -- given a rank, calculate it's value
 valueRank :: Rank -> Integer
 valueRank (Numeric r) = r
 valueRank         Ace = 11
 valueRank          _  = 10
 
-prop_ValueRankSane r = v >= 2 && v <= 11 
-  where v = valueRank r
-        
 -- given a hand, is the player bust?
 gameOver :: Hand -> Bool
 gameOver h = value h > 21
@@ -55,19 +44,6 @@ winner g b = if value g > value b then Guest
 h             <+ Empty = h
 Empty         <+ h     = h
 (Add c h1)    <+ h2    = (Add c (h1 <+ h2))
-
-
-prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
-prop_onTopOf_assoc p1 p2 p3 = 
-  p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
-
-prop_onTopOf_append :: Hand -> Hand -> Bool
-prop_onTopOf_append h1 h2 = 
-  fromHand h1 ++ fromHand h2 == fromHand (h1 <+ h2)
-
-prop_size_onTopOf :: Hand -> Hand -> Bool
-prop_size_onTopOf h1 h2 = 
-  size h1 + size h2 == size (h1 <+ h2)
 
 -- a full deck of 52 cards
 fullDeck :: Hand
@@ -126,14 +102,6 @@ shuffle' g result Empty = result
 shuffle' g result curr  = shuffle' g' ((Add c Empty) <+ result) h 
   where (n,g') = randomR    (0, (size curr)) g
         (c,h)  = removeCard curr n
-
-prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
-prop_shuffle_sameCards g c h =
-  c `belongsTo` h == c `belongsTo` shuffle g h
-
-prop_size_shuffle :: StdGen -> Hand -> Bool
-prop_size_shuffle g h =
-  size h == size (shuffle g h)
 
 -- given a card, is the card in the hand?
 belongsTo :: Card -> Hand -> Bool
