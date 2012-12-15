@@ -2,6 +2,7 @@ module BlackJack where
 import Test.QuickCheck
 import Cards
 import Wrapper
+import System.Random
 
 -- returns an empty hand
 empty :: Hand
@@ -95,3 +96,24 @@ draw Empty _   = error "draw: The deck is empty"
 draw (Add c h1) h2 = (h1, (Add c h2))
 
 playBank :: Hand -> Hand
+playBank deck = playBank' deck Empty
+
+playBank' :: Hand -> Hand -> Hand
+playBank' deck bank = if value bank' <= 16 
+                      then playBank' deck' bank'
+			else bank
+                        where (deck', bank') = draw deck bank
+
+twoRandomIntegers :: StdGen -> (Integer, Integer)
+twoRandomIntegers g = (n1, n2)
+  where (n1, g1) = randomR(0,10) g
+        (n2, g2) = randomR(0,10) g1
+        
+
+{-
+-- removes the nth card from the hand and returns the card and the remaining hand
+removeCard :: Hand -> Integer -> (Card, Hand)
+removeCard Empty     0 -> error "removeCard: card not in hand"
+removeCard hand
+removeCard
+-}
