@@ -36,10 +36,13 @@ prop_NumberOfAces h = numberOfAces h == (acesIn $ fromHand h)
 valueCard :: Card -> Integer
 valueCard (Card r _) = valueRank r
 
-prop_ValueCardSane (Card Ace s)         = valueCard (Card Ace s)         == 11
-prop_ValueCardSane (Card (Numeric r) s) = valueCard (Card (Numeric r) s) == unpack (Numeric r) 
-  where unpack (Numeric r) = r
-prop_ValueCardSane c                    = valueCard c                    == 10
+prop_ValueCardSane 
+  (Card Ace s)         = valueCard (Card Ace s)         == 11
+prop_ValueCardSane 
+  (Card (Numeric r) s) = valueCard (Card (Numeric r) s) == unpack (Numeric r) 
+  where 
+    unpack (Numeric r) = r
+prop_ValueCardSane c   = valueCard c                    == 10
 
 -- given a rank, calculate it's value
 valueRank :: Rank -> Integer
@@ -72,12 +75,16 @@ Empty         <+ h     = h
 
 
 prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
-prop_onTopOf_assoc p1 p2 p3 = p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
+prop_onTopOf_assoc p1 p2 p3 = 
+  p1 <+ (p2 <+ p3 ) == (p1 <+ p2 ) <+ p3
 
-prop_onTopOf_append h1 h2 = fromHand h1 ++ fromHand h2 == fromHand (h1 <+ h2)
+prop_onTopOf_append :: Hand -> Hand -> Bool
+prop_onTopOf_append h1 h2 = 
+  fromHand h1 ++ fromHand h2 == fromHand (h1 <+ h2)
 
 prop_size_onTopOf :: Hand -> Hand -> Bool
-prop_size_onTopOf h1 h2 = size h1 + size h2 == size (h1 <+ h2)
+prop_size_onTopOf h1 h2 = 
+  size h1 + size h2 == size (h1 <+ h2)
 
 fullDeck :: Hand
 fullDeck = fullHand Hearts <+ (fullHand Spades <+ (fullHand Diamonds <+ fullHand Clubs))
@@ -104,13 +111,6 @@ playBank' deck bank = if value bank' <= 16
 			else bank
                         where (deck', bank') = draw deck bank
 
-twoRandomIntegers :: StdGen -> (Integer, Integer)
-twoRandomIntegers g = (n1, n2)
-  where (n1, g1) = randomR(0,10) g
-        (n2, g2) = randomR(0,10) g1
-        
-
-
 -- removes the nth card from the hand and returns the card and the remaining hand
 removeCard :: Hand -> Integer -> (Card, Hand)
 removeCard Empty 0 = error "removeCard: card not in hand"
@@ -120,5 +120,42 @@ removeCard hand  n = removeCard' Empty hand n
 --             Before  Current n
 removeCard' :: Hand -> Hand -> Integer -> (Card, Hand)
 removeCard' before (Add c h) 0 = (c, (before    <+ h))
+removeCard' before (Add c Empty) n =  (c, before)
 removeCard' before (Add c h) n = removeCard' 
                                  ((Add c Empty) <+ before) h (n-1)
+                                 
+shuffle :: StdGen -> Hand -> Hand
+shuffle g Empty = Empty
+shuffle g h     = shuffle' g Empty h
+                  
+shuffle':: StdGen -> Hand -> Hand -> Hand
+shuffle' g result Empty = result
+shuffle' g result curr = shuffle' g' ((Add c Empty) <+ result) h 
+  where (n,g') = randomR(0, (size curr)) g
+        (c,h) = removeCard curr n
+
+
+prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
+prop_shuffle_sameCards g c h =
+  c `belongsTo` h == c `belongsTo` shuffle g h
+
+prop_size_shuffle :: StdGen -> Hand -> Bool
+prop_size_shuffle g h =
+  size h == size (shuffle g h)
+
+belongsTo :: Card -> Hand -> Bool
+c `belongsTo` Empty = False
+c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
+
+implementation = Interface { iEmpty    = empty,
+                             iFullDeck = fullDeck,
+                             iValue    = value,
+                             iGameOver = gameOver,
+                             iWinner   = winner,
+                             iDraw     = draw,
+                             iPlayBank = playBank,
+                             iShuffle  = shuffle
+                           }
+
+main :: IO ()
+main = runGame implementation
