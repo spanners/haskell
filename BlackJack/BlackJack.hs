@@ -68,25 +68,28 @@ draw (Add c h1) h2 = (h1, Add c h2)
 
 -- |Play a bank move according to the rules of Black Jack.
 playBank :: Hand -> Hand
-playBank deck = playBank' deck Empty
+playBank deck = playBank_ deck Empty
   where
     -- A helper function for playBank which keeps on drawing from the deck
     -- (until the bank's hand value is > 16).
-    playBank' deck bank = if value bank' <= 16 
-                        then playBank' deck' bank'
+    playBank_ deck bank = if value bank' <= 16 && nextInDeck /= Empty
+                        then playBank_ deck' bank'
 			  else bank
-                          where (deck', bank') = draw deck bank
+                          where 
+			    (Add _ nextInDeck) = deck
+			    (deck',     bank') = draw deck bank
+
 
 -- |Given a hand and a number n, remove the nth card from the hand,
 -- resulting in a tuple (card, hand_without_card).
 removeCard :: Hand -> Integer -> (Card, Hand)
 removeCard Empty 0 = error "removeCard: card not in hand"
-removeCard hand  n = removeCard' Empty hand n
+removeCard hand  n = removeCard_ Empty hand n
   where 
     -- A helper function for removeCard which builds the remaining_hand into remainder.a
-    removeCard' remainder (Add c h)     0 = (c, remainder     <+ h)
-    removeCard' remainder (Add c Empty) n = (c, remainder)
-    removeCard' remainder (Add c h)     n = removeCard' 
+    removeCard_ remainder (Add c h)     0 = (c, remainder     <+ h)
+    removeCard_ remainder (Add c Empty) n = (c, remainder)
+    removeCard_ remainder (Add c h)     n = removeCard_ 
                                             ((Add c Empty) <+ remainder) h (n-1)
                                  
 -- |Given a PRNG and a hand, shuffle the hand.
