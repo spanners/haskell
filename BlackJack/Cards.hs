@@ -73,3 +73,15 @@ fromHand (Add c h) = c : fromHand h
 -- |Given a list of cards, build a hand
 toHand :: [Card] -> Hand
 toHand = foldr Add Empty
+
+-- |isPermutation xs ys checks whether xs is a permutation of ys
+isPermutation :: Eq a => [a] -> [a] -> Bool
+isPermutation []     []     = True
+isPermutation []     (y:ys) = False
+isPermutation (x:xs) ys     = elem x ys && isPermutation xs (removeOnce x ys)
+
+-- |removeOnce x xs removes x from the list xs, but only once
+removeOnce :: Eq a => a -> [a] -> [a]
+removeOnce x []                 = []
+removeOnce x (y:ys) | x == y    = ys
+                    | otherwise = y : removeOnce x ys

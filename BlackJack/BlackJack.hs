@@ -105,3 +105,4 @@ shuffle g h     = shuffle' g Empty h
 belongsTo :: Card -> Hand -> Bool
 c `belongsTo` Empty = False
 c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
+
