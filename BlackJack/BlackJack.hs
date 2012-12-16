@@ -70,7 +70,7 @@ draw (Add c h1) h2 = (h1, Add c h2)
 playBank :: Hand -> Hand
 playBank deck = playBank' deck Empty
   where
-    -- |a helper function for playBank which keeps on drawing from the deck
+    -- A helper function for playBank which keeps on drawing from the deck
     -- (until the bank's hand value is > 16).
     playBank' deck bank = if value bank' <= 16 
                         then playBank' deck' bank'
@@ -83,7 +83,7 @@ removeCard :: Hand -> Integer -> (Card, Hand)
 removeCard Empty 0 = error "removeCard: card not in hand"
 removeCard hand  n = removeCard' Empty hand n
   where 
-    -- |A helper function for removeCard which builds the remaining_hand into remainder.
+    -- A helper function for removeCard which builds the remaining_hand into remainder.a
     removeCard' remainder (Add c h)     0 = (c, remainder     <+ h)
     removeCard' remainder (Add c Empty) n = (c, remainder)
     removeCard' remainder (Add c h)     n = removeCard' 
