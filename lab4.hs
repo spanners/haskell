@@ -25,7 +25,6 @@ sequence' []     = return []
 sequence' (m:ms) = do val <- m
                       vals <- sequence' ms
                       return (val:vals)
-                      
 -- can also be written
 -- sequence' = foldr (liftM2 (:)) (return [])   
 
@@ -42,4 +41,18 @@ game :: IO ()
 -- if higher, go for half of [51..100]
 -- if lower, go for [1..49]
 -- etc
-game = undefined 
+game = 
+  do 
+    putStrLn "Think of a number between 1 and 100!"
+    putStrLn "Is it 50?"
+    hint <- getLine 
+    if hint == "higher"
+       then putStrLn "So it's higher"
+      else if hint == "lower"
+           then putStrLn "So it's lower"
+           else if hint == "yes"
+                then putStrLn "Great, I won!"
+                else putStrLn "poop!"
+    return ()
+
+midList xs = xs !! ((length xs) `div` 2)
