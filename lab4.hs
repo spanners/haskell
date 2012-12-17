@@ -1,5 +1,6 @@
 import Test.QuickCheck
 import Control.Monad
+import System.Cmd
 
 look :: Eq a => a -> [(a,b)] -> Maybe b
 look x []           = Nothing
@@ -35,24 +36,29 @@ onlyIf True  m = do m
 onlyIf False m = return ()
 
 game :: IO ()
--- use the binary chop algorithm
--- start off by picking half of possible range
--- e.g. if possible range is [1..100], pick 50
--- if higher, go for half of [51..100]
--- if lower, go for [1..49]
--- etc
 game = 
-  do 
-    putStrLn "Think of a number between 1 and 100!"
-    putStrLn "Is it 50?"
-    hint <- getLine 
-    if hint == "higher"
-       then putStrLn "So it's higher"
-      else if hint == "lower"
-           then putStrLn "So it's lower"
-           else if hint == "yes"
-                then putStrLn "Great, I won!"
-                else putStrLn "poop!"
-    return ()
+  do
+    putStrLn $ "Think of a number between " ++ show lower ++ " and " ++ show higher ++ "!"
+    gameLoop [lower..higher]
+    where
+      lower = 1
+      higher = 100
 
+-- bugs: 
+--      * It doesn't autoguess when range is 1 number
+--      * It doesn't catch the error when range is 1 number 
+
+gameLoop :: [Integer] -> IO ()
+gameLoop range =
+  do
+    putStr $ "Is it " ++ show (midList range) ++ "? "
+    hint <- getLine
+    if hint == "higher" then gameLoop [((midList range)+1)..(last range)]
+      else if hint == "lower" then gameLoop [(head range)..((midList range)-1)]
+           else if hint == "yes" then putStrLn "Great, I won!"
+                else gameLoop range
+    return ()
+        
+-- again, bug with this as it doesn't work with ranges length 1
 midList xs = xs !! ((length xs) `div` 2)
+
