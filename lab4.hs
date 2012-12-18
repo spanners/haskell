@@ -35,6 +35,8 @@ onlyIf :: Monad m => Bool -> m () -> m ()
 onlyIf True  m = do m 
 onlyIf False m = return ()
 
+-- Q3(*).
+
 game :: IO ()
 game = 
   do
@@ -44,21 +46,22 @@ game =
       lower = 1
       higher = 100
 
--- bugs: 
---      * It doesn't autoguess when range is 1 number
---      * It doesn't catch the error when range is 1 number 
-
 gameLoop :: [Integer] -> IO ()
 gameLoop range =
   do
-    putStr $ "Is it " ++ show (midList range) ++ "? "
+    putStr $ "Is it " ++ show guess ++ "? "
     hint <- getLine
-    if hint == "higher" then gameLoop [((midList range)+1)..(last range)]
-      else if hint == "lower" then gameLoop [(head range)..((midList range)-1)]
+    if hint == "higher" then gameLoop [(guess+1)..(last range)]
+      else if hint == "lower" then gameLoop [(head range)..(guess-1)]
            else if hint == "yes" then putStrLn "Great, I won!"
                 else gameLoop range
-    return ()
+    where
+      guess = midList range
         
--- again, bug with this as it doesn't work with ranges length 1
+midList [] = error "midList: length is 0"
 midList xs = xs !! ((length xs) `div` 2)
+
+-- Q5(*).
+
+-- A.
 
