@@ -1,6 +1,8 @@
 import Test.QuickCheck
 import Control.Monad
 import System.Cmd
+import System.Random
+import System.IO.Unsafe  -- be careful! 
 
 look :: Eq a => a -> [(a,b)] -> Maybe b
 look x []           = Nothing
@@ -64,4 +66,18 @@ midList xs = xs !! ((length xs) `div` 2)
 -- Q5(*).
 
 -- A.
+listOf' :: Integer -> Gen a -> Gen [a]
+listOf' n g = sequence' [g | _ <- [1..n]]
 
+-- B.
+
+listOfPairs :: Gen [([Int], [Int])]
+listOfPairs = 
+  do 
+    n <- arbitrary
+    (x,y) <- arbitrary
+    listOf' n (return ([x::Int], [y::Int]))
+
+-- C.
+--prop_unzipInverseOfZip :: Eq a => Eq b => [a] -> [b] -> Bool
+--prop_unzipInverseOfZip a b = unzip (zip a b) == (a, b)
