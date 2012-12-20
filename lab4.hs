@@ -44,21 +44,61 @@ game =
       lower = 1
       higher = 100
 
--- bugs: 
---      * It doesn't autoguess when range is 1 number
---      * It doesn't catch the error when range is 1 number 
-
 gameLoop :: [Integer] -> IO ()
 gameLoop range =
   do
-    putStr $ "Is it " ++ show (midList range) ++ "? "
+    putStr $ "Is it " ++ show guess ++ "? "
     hint <- getLine
-    if hint == "higher" then gameLoop [((midList range)+1)..(last range)]
-      else if hint == "lower" then gameLoop [(head range)..((midList range)-1)]
+    if hint == "higher" then gameLoop [(guess+1)..(last range)]
+      else if hint == "lower" then gameLoop [(head range)..(guess-1)]
            else if hint == "yes" then putStrLn "Great, I won!"
                 else gameLoop range
-    return ()
+    where
+      guess = midList range
         
--- again, bug with this as it doesn't work with ranges length 1
+midList [] = error "midList: list length 0"
 midList xs = xs !! ((length xs) `div` 2)
 
+listOf' :: Integer -> Gen a -> Gen [a]
+listOf' n g = sequence' [ g | _ <- [1..n] ]
+
+rExpr :: Int -> Gen Expr
+rExpr s = frequency [(1,rNum),(1,rVar),(s,rOp)]
+  where
+   rVar = elements $ map Var ["x","y","z"]
+
+   rNum = do 
+       n <- arbitrary
+       return $ Num n
+
+   rOp = do 
+      op <- elements [Add,Mul]
+      e1 <- rExpr s'
+      e2 <- rExpr s'
+      return $ op e1 e2
+
+   s' = s `div` 2
+
+instance Arbitrary Expr where
+  arbitrary = sized rExpr
+
+showExpr (Var x) = x
+showExpr (Num n) = show n
+showExpr (Add e e') = 
+  showExpr e ++ " + " ++ showExpr e'
+showExpr (Mul e e') = 
+  showFactor e ++ " * " ++ showFactor e'
+
+showFactor (Add e e') = 
+  "(" ++ showExpr (Add e e') ++ ")"
+showFactor e          = showExpr e
+
+instance Show Expr
+   where show = showExpr
+         
+data Expr
+  = Num Integer
+  | Add Expr Expr
+  | Mul Expr Expr
+  | Var String
+ deriving Eq
