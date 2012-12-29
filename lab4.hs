@@ -1,6 +1,8 @@
 import Test.QuickCheck
 import Control.Monad
 import System.Cmd
+import System.Random
+import System.IO.Unsafe  -- be careful! 
 
 look :: Eq a => a -> [(a,b)] -> Maybe b
 look x []           = Nothing
@@ -35,6 +37,8 @@ onlyIf :: Monad m => Bool -> m () -> m ()
 onlyIf True  m = do m 
 onlyIf False m = return ()
 
+-- Q3(*).
+
 game :: IO ()
 game = 
   do
@@ -56,6 +60,7 @@ gameLoop range =
     where
       guess = midList range
         
+<<<<<<< HEAD
 midList [] = error "midList: list length 0"
 midList xs = xs !! ((length xs) `div` 2)
 
@@ -102,3 +107,26 @@ data Expr
   | Mul Expr Expr
   | Var String
  deriving Eq
+=======
+midList [] = error "midList: length is 0"
+midList xs = xs !! ((length xs) `div` 2)
+
+-- Q5(*).
+
+-- A.
+listOf' :: Integer -> Gen a -> Gen [a]
+listOf' n g = sequence' [g | _ <- [1..n]]
+
+-- B.
+
+listOfPairs :: Gen [([Int], [Int])]
+listOfPairs = 
+  do 
+    n <- arbitrary
+    (x,y) <- arbitrary
+    listOf' n (return ([x::Int], [y::Int]))
+
+-- C.
+--prop_unzipInverseOfZip :: Eq a => Eq b => [a] -> [b] -> Bool
+--prop_unzipInverseOfZip a b = unzip (zip a b) == (a, b)
+>>>>>>> 195f2ba578e05cb4cb7bde7a5271fcb07eab7e16
