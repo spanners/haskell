@@ -2,7 +2,7 @@ all:
 	ghc -o blackjack --make Main
 	./blackjack
 
-docs:
+doc:
 	haddock -h Main
 	defaultbrowser index.html &
 
@@ -15,4 +15,8 @@ test:
 clean:
 	rm -rf *.sty *.log *.tex *.pdf *.aux *.dvi *.out *.toc \
 		*.o *.hi *.tix *.html blackjack .hpc *.png *.js \
-		*.gif *.css
+		*.gif *.css dist/ ${HOME}/bin/BlackJack
+
+package:
+	cabal install --prefix=${HOME} --user
+	cabal haddock --executable
