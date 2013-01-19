@@ -106,6 +106,5 @@ shuffle g h     = shuffle' g Empty h
 
 -- |Given a card, is the card in the hand?
 belongsTo :: Card -> Hand -> Bool
-c `belongsTo` Empty = False
+c `belongsTo` Empty      = False
 c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
-
