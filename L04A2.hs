@@ -40,10 +40,11 @@ eval t e = eval' e where
   eval' (Add e1 e2) = eval' e1 + eval' e2
   eval' (Mul e1 e2) = eval' e1 * eval' e2
   eval' (Var x)     = fromJust $ lookup x t
-                                -- look x t
+                              {- look x t
   look k [] = error $ " No value for " ++ k
   look k ((k',v):t) | k == k'   = v
                     | otherwise = look k t
+-}
 
 -- data Maybe a = Nothing | Just a
 -- Maybe models failure -- in the case of lookup x t, there might be an x in the table, there might not be
@@ -77,8 +78,6 @@ instance Show Expr
 rExpr :: Int -> Gen Expr
 rExpr s = frequency [(1,rNum),(1,rVar),(s,rOp)]
   where
-   s' = s `div` 2
-
    rVar = elements $ map Var ["x","y","z"]
 
    rNum = do 
@@ -90,6 +89,8 @@ rExpr s = frequency [(1,rNum),(1,rVar),(s,rOp)]
       e1 <- rExpr s'
       e2 <- rExpr s'
       return $ op e1 e2
+
+   s' = s `div` 2
 
 instance Arbitrary Expr where
   arbitrary = sized rExpr

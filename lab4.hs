@@ -60,6 +60,54 @@ gameLoop range =
     where
       guess = midList range
         
+<<<<<<< HEAD
+midList [] = error "midList: list length 0"
+midList xs = xs !! ((length xs) `div` 2)
+
+listOf' :: Integer -> Gen a -> Gen [a]
+listOf' n g = sequence' [ g | _ <- [1..n] ]
+
+rExpr :: Int -> Gen Expr
+rExpr s = frequency [(1,rNum),(1,rVar),(s,rOp)]
+  where
+   rVar = elements $ map Var ["x","y","z"]
+
+   rNum = do 
+       n <- arbitrary
+       return $ Num n
+
+   rOp = do 
+      op <- elements [Add,Mul]
+      e1 <- rExpr s'
+      e2 <- rExpr s'
+      return $ op e1 e2
+
+   s' = s `div` 2
+
+instance Arbitrary Expr where
+  arbitrary = sized rExpr
+
+showExpr (Var x) = x
+showExpr (Num n) = show n
+showExpr (Add e e') = 
+  showExpr e ++ " + " ++ showExpr e'
+showExpr (Mul e e') = 
+  showFactor e ++ " * " ++ showFactor e'
+
+showFactor (Add e e') = 
+  "(" ++ showExpr (Add e e') ++ ")"
+showFactor e          = showExpr e
+
+instance Show Expr
+   where show = showExpr
+         
+data Expr
+  = Num Integer
+  | Add Expr Expr
+  | Mul Expr Expr
+  | Var String
+ deriving Eq
+=======
 midList [] = error "midList: length is 0"
 midList xs = xs !! ((length xs) `div` 2)
 
@@ -81,3 +129,4 @@ listOfPairs =
 -- C.
 --prop_unzipInverseOfZip :: Eq a => Eq b => [a] -> [b] -> Bool
 --prop_unzipInverseOfZip a b = unzip (zip a b) == (a, b)
+>>>>>>> 195f2ba578e05cb4cb7bde7a5271fcb07eab7e16
