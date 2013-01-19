@@ -13,4 +13,6 @@ test:
 	defaultbrowser hpc_index.html &
 
 clean:
-	rm -rf *.sty *.log *.tex *.pdf *.aux *.dvi *.out *.toc *.o *.hi *.tix *.html blackjack .hpc *.png *.js *.gif *.css
+	rm -rf *.sty *.log *.tex *.pdf *.aux *.dvi *.out *.toc \
+		*.o *.hi *.tix *.html blackjack .hpc *.png *.js \
+		*.gif *.css
