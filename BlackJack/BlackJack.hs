@@ -86,7 +86,7 @@ removeCard :: Hand -> Integer -> (Card, Hand)
 removeCard Empty 0 = error "removeCard: card not in hand"
 removeCard hand  n = removeCard_ Empty hand n
   where 
-    -- A helper function for removeCard which builds the remaining_hand into remainder
+    -- A helper function for removeCard which builds the remaining_hand into remainder.
     removeCard_ remainder (Add c h)     0 = (c, remainder     <+ h)
     removeCard_ remainder (Add c Empty) n = (c, remainder)
     removeCard_ remainder (Add c h)     n = removeCard_ 
