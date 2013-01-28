@@ -4,17 +4,21 @@ import Data.Char
 
 -- **** 
 -- Small examples of IO
--- writeFile
+-- t: writeFile
+-- :: FilePath -> String -> IO ()
+-- t: readFile
+-- :: FilePath -> IO String
 
 -- * Building instructions vs running instructions
--- _Instructions_ themselves, and the result of _Running_ the instructions are *not* the same
+-- _Instructions_ themselves, and the _result_ of running the instructions are *not* the same
 -- You should think of IO as a special, abstract type representing instructions
 
--- Who gets to run instructions? Nobody. The only way they can be run is if it is the top-level value.
--- Only If the IO type reaches the top-level does the runtime run the instruction.
+-- Functions that produce something of type IO _are_ pure functions! Whatever arguments you give them, they will always give the same instructions.
+
+-- Who gets to run instructions? Is there a function called "runInstructions"? No. The only way they can be run is if they are the top-level value.
+
 
 -- instructions with results:
-
 
 -- building complex instructions from simple ones
 
@@ -39,8 +43,14 @@ longest = do
         wlist <- readFile "/usr/share/dict/words"
         return (long wlist)
 
-  where long :: (Int, String) -> String
-        long  =  maximum . map (\w -> (length w, w)) . words
+  where long :: String -> String
+        long  =  snd 
+                 . maximum 
+                 -- pairing two ordered things: length with the word itself
+                 -- we get another ordered thing -- an ordered pair
+                 -- with which we can find the maximum
+                 . map (\w -> (length w, w))  
+                 . words
 -- dotwice
 
 dotwice :: IO a -> IO (a,a)

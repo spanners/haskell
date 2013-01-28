@@ -9,8 +9,8 @@ guessLimit = 10
 
 main :: IO()
 main = do 
-     w <- randomWord
-     gameLoop w ""
+  w <- randomWord
+  gameLoop w ""
 
 randomWord :: IO String
 randomWord = do 
@@ -26,15 +26,14 @@ gameLoop w g | win  = showWin
    do displayStatus
       guesses <- getLine
       gameLoop w (g `union` take lives guesses)  
- where
-  win   = and [c `elem` g | c <- w] -- all (`elem` g) w
-  lose  = lives <= 0
-  lives = guessLimit - length (g \\ w)
-  showLose = putStrLn $ "You die! The word was " ++ w
-  showWin  = putStrLn $ "Win! You guessed " ++ w 
+  where
+    win   = and [c `elem` g | c <- w] -- all (`elem` g) w
+    lose  = lives <= 0
+    lives = guessLimit - length (g \\ w)
+    showLose = putStrLn $ "You die! The word was " ++ w
+    showWin  = putStrLn $ "Win! You guessed " ++ w 
                              ++ " with " ++ show lives 
                              ++ " lives remaining"
-  displayStatus = do
-    putStrLn [if c `elem` g then c else '_' | c <- w] 
-    putStrLn $ "Type your guess (" ++ show lives ++ " remaining)"
+    displayStatus = do putStrLn [if c `elem` g then c else '_' | c <- w] 
+                       putStrLn $ "Type your guess (" ++ show lives ++ " remaining)"
           
