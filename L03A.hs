@@ -41,6 +41,8 @@ copyFile fromFile toFile =
 longest :: IO String
 longest = do 
         wlist <- readFile "/usr/share/dict/words"
+        -- we should keep the pure code in the definition of `long` separate from the do block
+        -- it's much easier to test pure functional code which doesn't deal with IO
         return (long wlist)
 
   where long :: String -> String
@@ -59,7 +61,10 @@ dotwice i = do
         a2 <- i
         return (a1,a2)
 
+-- dont
 dont :: IO a -> IO ()
+-- this emphasises the difference between /having/ the instruction, and /running/ the instruction
+-- instructions only get run when they meet the operating systems
 dont i = return ()
 
 test :: IO Int
