@@ -88,3 +88,14 @@ forLoop :: (a -> IO ()) -> [a] -> IO ()
 forLoop f = (sequence_ . map f) 
 -- e.g. forLoop [1..10] print 
 -- will print numbers from 1 to 10.
+
+
+mySequence_ :: [IO a] -> IO ()
+mySequence_ = foldr (>>) (return ())
+
+mySequence :: [IO a] -> IO [a]
+mySequence []     = return []
+mySequence (i:is) = do a  <- i
+                       as <- mySequence is 
+                       return (a:as)
+
