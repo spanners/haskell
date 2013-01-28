@@ -79,14 +79,12 @@ test = do
 copyAll :: [FilePath] -> FilePath -> IO ()
 copyAll fromFiles toDir = 
     sequence_ [copyFile f (combine toDir f) | f <- fromFiles]
-    
-
 
 concatAll :: [FilePath] -> FilePath -> IO ()
 concatAll fromFiles toFile =
   (sequence . map readFile) fromFiles >>= writeFile toFile . unlines
 
-forLoop :: [a] -> (a -> IO ()) -> IO ()
-forLoop = undefined 
+forLoop :: (a -> IO ()) -> [a] -> IO ()
+forLoop f = (sequence_ . map f) 
 -- e.g. forLoop [1..10] print 
 -- will print numbers from 1 to 10.
