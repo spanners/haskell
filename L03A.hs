@@ -1,6 +1,9 @@
 module L03A where
 import Data.List
 import Data.Char
+import Control.Monad
+import System.FilePath.Posix
+
 
 -- **** 
 -- Small examples of IO
@@ -72,27 +75,16 @@ test = do
      return 42
      return 0
 
--- sequence_ 
-mySequence_ :: [IO a] -> IO ()
-mySequence_ []     = return ()
-mySequence_ (i:is) = 
-  do i 
-     mySequence_ is
- -- i >> mySequence_ is
-
--- sequence
-mySequence :: [IO a] -> IO [a]
-mySequence [] = return []
-mySequence (i:is) = 
-  do a <- i
-     as <- mySequence is
-     return (a:as)
-
 -- Exercises: Define the following functions: 
-copyAll :: [FilePath] -> FilePath -> IO()
-copyAll fromFiles toFile = undefined
-  -- hint: sequence :: [IO a] -> IO [a]   
-  --       map :: (a -> b) -> [a] -> [b]
+copyAll :: [FilePath] -> FilePath -> IO ()
+copyAll fromFiles toDir = 
+    sequence_ [copyFile f (combine toDir f) | f <- fromFiles]
+    
+
+
+concatAll :: [FilePath] -> FilePath -> IO ()
+concatAll fromFiles toFile =
+  (sequence . map readFile) fromFiles >>= writeFile toFile . unlines
 
 forLoop :: [a] -> (a -> IO ()) -> IO ()
 forLoop = undefined 
