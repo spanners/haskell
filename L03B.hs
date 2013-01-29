@@ -90,7 +90,9 @@ rRank = oneof [rRoyal,rNumeric]
 instance Arbitrary Rank where
   arbitrary = frequency [(4,rRoyal),(9,rNumeric)]
 
+-- this is a modifier to allow us to collect more information about arbitrary ranks
 prop_Rank'' r = classify (r < Jack) "Numeric" $ prop_Rank r
+-- another modifier
 prop_Rank' r = collect r $ prop_Rank r
 prop_Rank (Numeric n) = n >= 2 && n <= 10
 prop_Rank _           = True
@@ -114,11 +116,12 @@ fromHand (Add c h) = c : fromHand h
 
 toHand = foldr Add Empty
 
+-- this is an instance of arbitrary Hands without duplicates
 instance Arbitrary Hand where
   arbitrary = fmap (toHand . nub) $ listOf arbitrary
   
 prop_Hand h = cs == nub cs where cs = fromHand h
-0
+
 --------------------------------------------------------------
 
 
