@@ -41,9 +41,11 @@ prop_size_onTopOf :: Hand -> Hand -> Bool
 prop_size_onTopOf h1 h2 = 
   size h1 + size h2 == size (h1 <+ h2)
 
+prop_ValueRankSane :: Rank -> Bool
 prop_ValueRankSane r = v >= 2 && v <= 11 
   where v = valueRank r
 
+prop_ValueCardSane :: Card -> Bool
 prop_ValueCardSane  (Card Ace s) 
   = valueCard (Card Ace s)         == 11
 prop_ValueCardSane (Card (Numeric r) s) 
@@ -52,23 +54,31 @@ prop_ValueCardSane (Card (Numeric r) s)
 prop_ValueCardSane c 
   = valueCard c                    == 10
 
+prop_value :: Hand -> Hand -> Bool
 prop_value h1 h2 = if h1 == h2 then value h1 == value h2 else True
 
+prop_gameOver :: Hand -> Bool
 prop_gameOver h = if value h > 21 then gameOver h else not (gameOver h)
 
+prop_empty :: Bool
 prop_empty = empty == Empty 
 
+prop_winner_guestWins :: Hand -> Hand -> Bool
 prop_winner_guestWins g b = winner g b == Bank || winner g b == Guest
 
+prop_fullDeck :: Bool
 prop_fullDeck = fullDeck == deck
 
+prop_fullDeckLessStrict :: Bool
 prop_fullDeckLessStrict = isPermutation (fromHand fullDeck) (fromHand deck)
 
+prop_draw :: Hand -> Property
 prop_draw h1 = h1 /= Empty ==>
                if size h1 == 1
                   then Empty == fst (draw h1 Empty)
                else Empty /= fst (draw h1 Empty) 
 
+prop_playBank :: Hand -> Property
 prop_playBank d = d /= Empty ==>
                   value (playBank d) <= 16
 
