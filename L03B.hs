@@ -118,7 +118,7 @@ instance Arbitrary Hand where
   arbitrary = fmap (toHand . nub) $ listOf arbitrary
   
 prop_Hand h = cs == nub cs where cs = fromHand h
-
+0
 --------------------------------------------------------------
 
 
