@@ -1,13 +1,10 @@
 Blackjack
 =========
 
-This is the "Blackjack" game, the solution to Lab Assignment 2 (*spoilers
-inside!*)
+This is the "Blackjack" game, the solution to [Lab2][]
 
 I put Blackjack in quotes as it does not adhere to true Blackjack rules, but
 instead uses the rules described in the assignment.
-
-http://www.cse.chalmers.se/edu/year/2012/course/TDA452/labs/2/
 
 It has some nice additions which I think many Haskell users might find useful:
 
@@ -20,4 +17,7 @@ It has some nice additions which I think many Haskell users might find useful:
 You may want to use this build setup for your own projects to maintain a
 clearer overview of your testing coverage and documentation.
 
-(See the Makefile for the implementation of these features.)
+(See the [Makefile][] for the implementation of these features.)
+
+[Lab2]: http://www.cse.chalmers.se/edu/year/2012/course/TDA452/labs/2/
+[Makefile]: https://github.com/spanners/haskell/blob/master/BlackJack/Makefile
