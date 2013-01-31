@@ -144,7 +144,7 @@ insert x (y:ys)          = y:insert x ys
 
 -}
 
-prop_insert x xs  = 
+prop_insert2 x xs  = 
     classify (length xs < 2) "Trivial" $ 
     collect (length xs) $
     sorted xs ==> sorted $ insert x xs 
@@ -153,22 +153,3 @@ prop_insert x xs  =
 sorted xs = xs == sort xs -- inefficient! 
 -- Exercise: define an O(n) version
 -- Harder Exercise: define it without recursion (hint: zipWith)
-
-newtype OrderedI = OrderedI [Integer]
-  deriving (Eq,Show)
-
-instance Arbitrary OrderedI where
-  arbitrary = do
-            xs <- arbitrary
-            return $ OrderedI $ sort xs
-            -- inefficient again. See slides for an O(n) version
-            -- Exercise: redefine using liftM instead of do...
-
-prop_insert2 x (OrderedI xs)  = sorted xs ==>
-                                collect (length xs) $ 
-                                classify (length xs < 2) "Trivial" $ 
-                                sorted $ insert x xs 
-                   where types = x :: Integer
-
--- Note that QuickCheck has a predefined generator for ordered lists
--- orderedList :: (Arbitrary a, Ord a) => Gen [a]
