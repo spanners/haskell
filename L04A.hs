@@ -14,6 +14,16 @@ instance Show Expr where
   show = showExpr
           
 type Table = [(String,Integer)]
+
+-- make a new type just for generation of suitable tables
+newtype Env = Env Table
+  deriving Show
+           
+instance Arbitrary Env where 
+      arbitrary = do 
+          (l,m,n) <- arbitrary
+          return $ Env [("x",l),("y",m),("z",n)]
+
 eval :: Table -> Expr -> Integer
 eval t e = eval' e where
   eval' (Num n)     = n
@@ -54,7 +64,7 @@ level = fromInteger range
 rExpr :: Int -> Gen Expr
 rExpr s = frequency [(1,rNum), (1,rVar), (s,rBin s)]
   where
-    rVar = oneof $ map Var ["a".."z"]
+    rVar = elements $ map Var ["x","y","z"]
     rNum = elements $ map Num [-range..range]
     rBin s = do
       let s' = (s `div` 2)
