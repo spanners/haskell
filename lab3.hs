@@ -54,14 +54,15 @@ occursIn a xs = a `elem` xs
 allOccursIn :: Eq a => [a] -> [a] -> Bool
 allOccursIn xs ys = xs `isPermutation` ys
 
---sameElements :: Eq a => [a] -> [a] -> Bool
---sameElements xs ys = and [a == b | a <- xs, b <- ys]
+sameElements :: Eq a => [a] -> [a] -> Bool
+sameElements xs ys = and [x == y | (x,y) <- xs `zip` ys]
 
 numOccurences :: Eq a => a -> [a] -> Int
 numOccurences x []              = 0
 numOccurences x (a:as) | x /= a = numOccurences x as
 numOccurences x (a:as) | x == a = 1 + numOccurences x as
 
+remove :: (a -> Bool) -> [a] -> [a]
 remove p = filter (not . p)
 
 bag :: Eq a => [a] -> [(a, Int)]
@@ -70,11 +71,17 @@ bag (x:xs) = (x, numOccurences x (x:xs)) : bag (remove (==x) xs)
 
 -- 7. Elements and Positions
 
-indexItems :: [a] -> [(Int,a)]
-indexItems xs = [0..] `zip` xs
-
-itemPosition :: Eq a => a -> [a] -> [Int] 
-itemPosition x xs = [index | (index,elem) <- indexItems xs, x == elem] 
+itemPosition :: Eq a => a -> [a] -> [Int]
+itemPosition x xs = [index | (index,elem) <- [0..] `zip` xs, elem == x] 
 
 positions :: Eq a => [a] -> [(a, [Int])]
 positions xs = nub (xs `zip` [(itemPosition x xs) | x <- xs])
+
+-- 8. More List Comprehensions
+
+-- this seems to do a cartesian product of xs and ys
+pairs :: [a] -> [b] -> [(a,b)]
+pairs xs ys = [(x,y) | x <-xs, y<-ys]
+
+pythagorean_triad :: [(Int, Int, Int)]
+pythagorean_triad = [(a,b,c) | a <- [0..100], b <- [0..100], c <- [0..100], a^2 + b^2 == c^2]
