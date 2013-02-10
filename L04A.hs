@@ -69,7 +69,7 @@ rExpr s = frequency [(1,rNum), (1,rVar), (s,rBin s)]
     rBin s = do
       let s' = (s `div` 2)
       op <- elements [Add,Mul]
-      e1 <- rExpr s'
+      e1 <- rExpr s'      
       e2 <- rExpr s'
       return $ op e1 e2
     
@@ -82,10 +82,10 @@ main = do
   let e = head es
   putStrLn $ "What is the value of " ++ show e
   ans <- getLine
-  let v = show $ eval [] e
+  let v = show $ eval [("x",1),("y",2),("z",3)] e
   if (ans == v)
-     then putStrLn "Correct!"
-     else putStrLn $ "Wrong! Correct answer was: " ++ v
+    then putStrLn "Correct!"
+    else putStrLn $ "Wrong! Correct answer was: " ++ v
   main
   
   
