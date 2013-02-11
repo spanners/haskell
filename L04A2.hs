@@ -48,13 +48,14 @@ eval t e = eval' e where
 
 -- data Maybe a = Nothing | Just a
 -- Maybe models failure -- in the case of lookup x t, there might be an x in the table, there might not be
--- This is useful because, in Haskell expressions, there is no sense of control flow. There is no obvious order in which computation takes place in a Haskell program. Haskell computations are LAZY.
   
 -- See the example of take 10 [1..10^20]
 -- Here, take asks for a result of the first 10 items
 -- But it can't get any items until the list is built
 -- So Haskell builds a bit of the list and then take returns a bit of the result
 -- Then a bit more of the list is built etc.
+-- It's fucking CHAOS!
+-- There is no sense of control flow. There is no obvious order in which computation takes place in a Haskell program. Haskell computations are LAZY.
 
 showExpr (Var x) = x
 showExpr (Mul (Num n) (Var x)) = show n ++ x
