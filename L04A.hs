@@ -76,13 +76,19 @@ rExpr s = frequency [(1,rNum), (1,rVar), (s,rBin s)]
 instance Arbitrary Expr where
   arbitrary = sized rExpr
   
+getTable :: Env -> Table
+getTable (Env t) = t
+
 main :: IO()
 main = do
   es <- sample' $ rExpr level
+  ts <- sample' (arbitrary :: Gen Env)
   let e = head es
+  let t = getTable $ (!!level) ts    
   putStrLn $ "What is the value of " ++ show e
+  putStrLn $ "with this table: " ++ show t ++ " ?"
   ans <- getLine
-  let v = show $ eval [("x",1),("y",2),("z",3)] e
+  let v = show $ eval t e
   if (ans == v)
     then putStrLn "Correct!"
     else putStrLn $ "Wrong! Correct answer was: " ++ v
