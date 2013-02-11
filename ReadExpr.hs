@@ -12,7 +12,6 @@ import Data.Char(isSpace)
 import Data.Maybe
 import Test.QuickCheck
 
-u = undefined
 ------------------------------------
 data Expr
   = Num Integer
