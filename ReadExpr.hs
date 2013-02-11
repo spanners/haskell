@@ -29,15 +29,26 @@ num s = case reads s of
    (i,s'):_ -> Just (Num i,s')
    _        -> Nothing
 
--- warm up: parse   n1+n2+ ... + nk for k >= 1 
-expr1  = chain num '+' Add 
-
-chain p c f s = 
- case p s of 
-  Just (n,c':s') | c == c' -> case chain p c f s' of 
-                         Just(e,s'') -> Just (f n e,s'')
-                         Nothing -> Just (n,c:s')
-  r               -> r
+-- | Chain together expression
+chain :: 
+  Eq a => 
+  ([a] -> Maybe (t, [a])) 
+  -> a -> (t -> t -> t) -> [a] -> Maybe (t, [a])
+chain 
+  -- | Parser p
+  p 
+  -- | Separated by character c
+  c 
+  -- | Built using function f 
+  f 
+  -- | Input expression string s
+  s 
+  = 
+  case p s of 
+    Just (n,c':s') | c == c' -> case chain p c f s' of 
+      Just(e,s'') -> Just (f n e,s'')
+      Nothing -> Just (n,c:s')
+    r               -> r
   
 -- <expression> ::= <term> | <term> "+" <expression>
 expr = chain term '+' Add
@@ -54,7 +65,7 @@ factor s       = num s
 -- top level parser
 -- remove spaces and expect no junk!
 readExpr :: String -> Maybe Expr              
-readExpr s = case expr (filter (not.isSpace) s) of
+readExpr s = case expr (filter (not . isSpace) s) of
   Just (e, "") -> Just e
   _            -> Nothing
 
@@ -86,6 +97,6 @@ rExpr s = frequency [(1,rNum),(s,rBin s)]  where
 instance Arbitrary Expr where
   arbitrary = sized rExpr
 
-prop_readExpr e = let s = showExpr e 
+prop_readExpr e = let s       = showExpr e 
                       Just e' = readExpr s
                   in showExpr e' == s
