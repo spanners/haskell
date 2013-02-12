@@ -23,7 +23,7 @@ blist'' = char '{' >> chain digit (char ',') >>= \ds ->
 prop_blist = 
  parse blist "{1,2,3,4}xxx" == Just ([1,2,3,4], "xxx")
 
-doTwice i = do 
+doTwice i = do
   a <- i
   b <- i
   return (a,b)
@@ -56,7 +56,7 @@ nameRegister :: [(PNr,Name)]
 nameRegister 
  = [("750408-0909","Dave")
    ,("850219-1234","Bob") 
-   ,("890929-C234","Pierre")]             
+   ,("890929-C234","John")]             
 
 addressRegister :: [((Name,PNr),Address)]
 addressRegister = 

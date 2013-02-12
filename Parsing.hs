@@ -76,14 +76,14 @@ digit  = sat isDigit
 -- pmap modifies the result of a parser
 
 pmap :: (a -> b) -> Parser a -> Parser b
-pmap f p = p >*> \a -> success (f a)
+pmap f p = p >>= \a -> return (f a)
 
 (>->) :: Parser a -> Parser b -> Parser b
-p >-> q = p >*> \_ -> q
+p >-> q = p >> q
 
 (<-<) :: Parser b -> Parser a -> Parser b
-p <-< q = p >*> \a -> q >-> success a
-
+p <-< q = q >>= return p
+             
 (<:>):: Parser a -> Parser [a] -> Parser [a]
 p <:> q = -- p >*> \a -> pmap (a:) q
   do a <- p
@@ -96,13 +96,10 @@ oneOrMore p  = p <:> zeroOrMore p
 
 chain :: Parser a -> Parser b -> Parser [a]
 -- parse a list of as which are separated by bs
-chain p q = p <:> zeroOrMore (q >-> p)
+chain p q = p <:> zeroOrMore (q >> p)
 
 -- example: comma separated digits "1,2,3"
 diglist = chain digit (char ',') 
-
-
-
 
 
 instance Monad Parser where
