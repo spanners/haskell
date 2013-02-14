@@ -82,10 +82,10 @@ pmap f p = p >>= \a -> return (f a)
 p >-> q = p >> q
 
 (<-<) :: Parser b -> Parser a -> Parser b
-p <-< q = q >>= return p
+p <-< q = p >>= \a -> q >> return a
              
 (<:>):: Parser a -> Parser [a] -> Parser [a]
-p <:> q = -- p >*> \a -> pmap (a:) q
+p <:> q =
   do a <- p
      as <- q
      return $ a:as

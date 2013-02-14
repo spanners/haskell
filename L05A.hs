@@ -93,6 +93,12 @@ billingAddress'' car =
   addr <- lookup (name,pnr) addressRegister
   return (name,addr)
 
+-- all de-sugaring
+billingAddress''' car = lookup car carRegister >>= \pnr ->
+  lookup pnr nameRegister >>= \name ->
+  lookup (name,pnr) addressRegister >>= \addr ->
+  return (name,addr)
+
 test' = do 
      return 32
      x <- Nothing
@@ -102,7 +108,8 @@ test'' =
      return 32 >>= \_ -> 
      Nothing   >>= \x -> return 42
 
- 
+test''' = 
+  billingAddress''' "GYN 434" == Just ("Bob","1 Chalmers Av\n Gothenburg")
 
 -- The fail function gives an error by default
 test = do putStrLn "hello"
