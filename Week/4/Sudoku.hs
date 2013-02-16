@@ -90,6 +90,8 @@ prop_Sudoku = isSudoku
 
 type Block = [Maybe Int]
 
+type IndexedBlock = [(Pos, Maybe Int)]
+
 isOkayBlock :: Block -> Bool
 isOkayBlock b = b' == nub b'
   where b' = filter (/=Nothing) b
@@ -98,6 +100,9 @@ blocks :: Sudoku -> [Block]
 blocks (Sudoku sud) = sud ++ 
                       transpose sud ++ 
                       threeByThrees sud
+
+--indexedSudoku :: Sudoku -> [[(Int, Maybe Int)]]
+--indexedSudoku (Sudoku board) = map (map zip [0..]) board
 
 threeByThrees :: [[Maybe Int]] -> [Block]
 threeByThrees s = concat [threeRows s row | row <- [3,6,9]] 
@@ -114,6 +119,26 @@ isOkay s = and $ map isOkayBlock (blocks s)
 prop_blocks :: Sudoku -> Bool
 prop_blocks s =  length [True | x <- blocks s, length x == 9] == 27
 
+
+-- NEW SHIT
+
+pairs xs ys = map (flip map xs . (,)) ys
+
+indexedSudoku :: Sudoku -> [IndexedBlock]
+indexedSudoku = zipWith zip (pairs [0..] [0..]) . rows
+
+
+indexedBlocks :: [IndexedBlock] -> [IndexedBlock]
+indexedBlocks blocks = blocks ++
+                       transpose blocks ++
+                       threeByThreeBlocks blocks
+
+threeByThreeBlocks blocks = concat [threeRowsBlocks blocks row | row <- [3,6,9]]
+
+threeRowsBlocks blocks row = [concat [drop (x-3) (take x y)
+                                      | y <- (drop (row-3)
+                                              (take row blocks))]
+                             | x <- [3,6,9]]
 -------------------------------------------------------------------------------
 
 -- E.
@@ -124,6 +149,16 @@ blank :: Sudoku -> Pos
 blank (Sudoku xs) = (i `div` 9, i `mod` 9)
     where i = blank' (concat xs) 0
           blank' xs b = if xs !! b == Nothing then b else blank' xs (b+1)
+          
+blockWithLeastBlanks :: [Block] -> Block
+blockWithLeastBlanks bs = snd $ minimum $ zip (map numBlankSpots $ bs) bs
+
+numBlankSpots :: Block -> Int
+numBlankSpots = count Nothing
+
+count :: (Eq a) => a -> [a] -> Int
+count x ys = length (filter (== x) ys)
+  
 
 (!!=) :: [a] -> (Int, a) -> [a]
 (!!=)  [] _ = []
