@@ -1,11 +1,11 @@
 module Sudoku where
 
 import Test.QuickCheck
-
+import Data.List
 -------------------------------------------------------------------------
 
 data Sudoku = Sudoku { rows :: [[Maybe Int]] }
- deriving ( Show, Eq )
+ deriving Eq
 
 -- allBlankSudoku is a sudoku with just blanks
 allBlankSudoku :: Sudoku
@@ -32,24 +32,15 @@ isSolved sud = isSudoku sud && and [isSudokuRow oneToNine x | x <- (rows sud)]
 -------------------------------------------------------------------------
 
 -- printSudoku sud prints a representation of the sudoku sud on the screen
-printSudoku :: Sudoku -> IO ()
-printSudoku sud = putStr $ showSudoku sud
 
-showSudoku :: Sudoku -> String
-showSudoku (Sudoku rs) = showRows rs
+instance Show Sudoku where
+  show = showSudoku
+    where    
+      showSudoku (Sudoku board) = unlines $ map (map showCell) board
+        where
+          showCell (Just n) = (head . show) n
+          showCell (Nothing) = '.'
 
-showRows :: [[Maybe Int]] -> String
-showRows []     = show ""
-showRows (r:rs) = showRow r ++ "\n" ++ showRows rs
-
-showRow :: [Maybe Int] -> String
-showRow []     = show ""
-showRow (e:es) = showCell e ++ showRow es
-
-showCell :: Maybe Int -> String
-showCell (Just n) = show n
-showCell Nothing  = show "."
- 
 -- readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
 readSudoku :: FilePath -> IO Sudoku
@@ -59,14 +50,39 @@ readSudoku = undefined
 
 -- cell generates an arbitrary cell in a Sudoku
 cell :: Gen (Maybe Int)
-cell = elements $ Nothing:(map Just [1..9])
+cell = frequency [(9,blank), (1,num)]
+  where
+    blank = return Nothing
+    num = do
+      x <- elements [1..9]
+      return $ Just x
+
 -- an instance for generating Arbitrary Sudokus
 instance Arbitrary Sudoku where
   arbitrary =
     do rows <- sequence [ sequence [ cell | j <- [1..9] ] | i <- [1..9] ]
        return (Sudoku rows)
 
--------------------------------------------------------------------------
+prop_Sudoku :: Sudoku -> Bool
+prop_Sudoku = isSudoku
+
+-----------------------------------------------------------------------------
+
+-- D.
+
+type Block = [Maybe Int]
+
+isOkayBlock :: Block -> Bool
+isOkayBlock b = b' == nub b'
+  where b' = filter (/=Nothing) b
+
+{-
+blocks :: Sudoku -> [Block]
+blocks (Sudoku board) = board ++ 
+                        transpose board ++
+                        threeByThrees board
+-}                      
+threeByThrees board = [take 3 $ (map $ take 3) (drop x $ board) | x <- [0,3,6]]
 
 example :: Sudoku
 example = Sudoku
@@ -80,4 +96,3 @@ example = Sudoku
           , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
           , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
           ]
-
