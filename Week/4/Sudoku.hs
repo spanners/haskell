@@ -2,7 +2,12 @@ module Sudoku where
 
 import Test.QuickCheck
 import Data.List
+import Data.Char
+import Data.Maybe
+
 -------------------------------------------------------------------------
+
+-- A.
 
 data Sudoku = Sudoku { rows :: [[Maybe Int]] }
  deriving Eq
@@ -15,10 +20,14 @@ allBlankSudoku = Sudoku $
 -- isSudoku sud checks if sud is really a valid representation of a sudoku
 -- puzzle
 isSudoku :: Sudoku -> Bool
-isSudoku sud = length (rows sud) == 9 && and [isSudokuRow oneNineNothing x | x <- (rows sud)]
+isSudoku (Sudoku board) = length board == 9 
+                          && and [isSudokuRow oneNineNothing x 
+                                 | x <- board]
 
 isSudokuRow :: [Maybe Int] -> [Maybe Int] -> Bool
-isSudokuRow nums row = length row == 9 && and [x `elem` nums | x <- row]
+isSudokuRow nums row = length row == 9 
+                       && and [x `elem` nums 
+                              | x <- row]
 
 oneToNine :: [Maybe Int]
 oneToNine = map Just [1..9]
@@ -27,11 +36,13 @@ oneNineNothing = Nothing:oneToNine
 
 -- isSolved sud checks if sud is already solved, i.e. there are no blanks
 isSolved :: Sudoku -> Bool
-isSolved sud = isSudoku sud && and [isSudokuRow oneToNine x | x <- (rows sud)]
+isSolved sud = isSudoku sud 
+               && and [isSudokuRow oneToNine x 
+                      | x <- (rows sud)]
 
 -------------------------------------------------------------------------
 
--- printSudoku sud prints a representation of the sudoku sud on the screen
+-- B.
 
 instance Show Sudoku where
   show = showSudoku
@@ -44,9 +55,16 @@ instance Show Sudoku where
 -- readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
 readSudoku :: FilePath -> IO Sudoku
-readSudoku = undefined
-
+readSudoku fp = 
+  do s <- readFile fp
+     return (Sudoku (map readSud (lines s)))
+       where
+         readSud [] = []
+         readSud (x:xs) | x == '.'            = Nothing : (readSud xs)
+                        | x `elem` ['1'..'9'] = Just (digitToInt x) : (readSud xs)
 -------------------------------------------------------------------------
+
+-- C.
 
 -- cell generates an arbitrary cell in a Sudoku
 cell :: Gen (Maybe Int)
@@ -76,13 +94,89 @@ isOkayBlock :: Block -> Bool
 isOkayBlock b = b' == nub b'
   where b' = filter (/=Nothing) b
 
-{-
 blocks :: Sudoku -> [Block]
-blocks (Sudoku board) = board ++ 
-                        transpose board ++
-                        threeByThrees board
--}                      
-threeByThrees board = [take 3 $ (map $ take 3) (drop x $ board) | x <- [0,3,6]]
+blocks (Sudoku sud) = sud ++ 
+                      transpose sud ++ 
+                      threeByThrees sud
+
+threeByThrees :: [[Maybe Int]] -> [Block]
+threeByThrees s = concat [threeRows s row | row <- [3,6,9]] 
+                  
+threeRows :: [[Maybe Int]] -> Int -> [Block]
+threeRows s row = [concat [drop (x-3) (take x y) 
+                            | y <- (drop (row-3) 
+                                    (take row s))] 
+                    | x <- [3,6,9]]
+
+isOkay :: Sudoku -> Bool
+isOkay s = and $ map isOkayBlock (blocks s)
+
+prop_blocks :: Sudoku -> Bool
+prop_blocks s =  length [True | x <- blocks s, length x == 9] == 27
+
+-------------------------------------------------------------------------------
+
+-- E.
+
+type Pos = (Int, Int)
+
+blank :: Sudoku -> Pos
+blank (Sudoku xs) = (i `div` 9, i `mod` 9)
+    where i = blank' (concat xs) 0
+          blank' xs b = if xs !! b == Nothing then b else blank' xs (b+1)
+
+(!!=) :: [a] -> (Int, a) -> [a]
+(!!=)  [] _ = []
+(!!=) (x:xs) (n,c)
+        | n    == 0 = c:xs
+        | otherwise = x : xs !!= (n-1,c)
+
+update :: Sudoku -> Pos -> Maybe Int -> Sudoku
+update (Sudoku board) (n,m) i = 
+  Sudoku ((take n board) ++ 
+          [(board !! n) !!= (m, i)] ++ 
+          (drop (n+1) board))
+
+prop_isBlank :: Sudoku -> Bool
+prop_isBlank s = (update s (blank s) Nothing) == s
+ 
+prop_replaceThing :: Eq a => [a] -> (Int, a) -> Property
+prop_replaceThing ls (n, c) = ls /= [] ==>
+                              c == (ls !!= (n,c)) !! (n `mod` (length ls))
+
+prop_update :: Sudoku -> Pos -> Maybe Int -> Bool
+prop_update s (a,b) i = (rows (update s (a', b') i)) !! a' !! b' == i
+  where a' = a `mod` 9
+        b' = b `mod` 9
+        
+---------------------------------------------------------------------------------------
+
+-- F.
+
+solve :: Sudoku -> Maybe Sudoku
+solve s | not (isOkay s) = Nothing
+solve s | isSolved s = Just s
+solve s = case filter (/= Nothing) [solve (update s (blank s) (Just i))
+          | i <- [1..9]] of
+          [] -> Nothing
+          (x:_) -> x
+          
+readAndSolve :: FilePath -> IO Sudoku
+readAndSolve fp = 
+  do 
+    sud <- readSudoku fp
+    return (fromJust (solve sud))
+ 
+isSolutionOf :: Sudoku -> Sudoku -> Bool
+isSolutionOf s1 s2 | isSolved s1 = s1 == fromJust(solve s2)
+                   | otherwise = False
+ 
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound s =
+    s' /= Nothing && isSudoku s ==> isSolutionOf (fromJust s') s
+    where s' = solve s
+
+--------------------------------------------------------------------------------------
 
 example :: Sudoku
 example = Sudoku
