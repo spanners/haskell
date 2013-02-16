@@ -101,13 +101,8 @@ blocks (Sudoku sud) = sud ++
                       transpose sud ++ 
                       threeByThrees sud
 
---indexedSudoku :: Sudoku -> [[(Int, Maybe Int)]]
---indexedSudoku (Sudoku board) = map (map zip [0..]) board
-
-threeByThrees :: [[Maybe Int]] -> [Block]
 threeByThrees s = concat [threeRows s row | row <- [3,6,9]] 
                   
-threeRows :: [[Maybe Int]] -> Int -> [Block]
 threeRows s row = [concat [drop (x-3) (take x y) 
                             | y <- (drop (row-3) 
                                     (take row s))] 
@@ -128,17 +123,12 @@ indexedSudoku :: Sudoku -> [IndexedBlock]
 indexedSudoku = zipWith zip (pairs [0..] [0..]) . rows
 
 
-indexedBlocks :: [IndexedBlock] -> [IndexedBlock]
-indexedBlocks blocks = blocks ++
-                       transpose blocks ++
-                       threeByThreeBlocks blocks
+indexedBlocks :: Sudoku -> [IndexedBlock]
+indexedBlocks sud = sud' ++
+                    transpose sud' ++
+                    threeByThrees sud'
+  where sud' = indexedSudoku sud
 
-threeByThreeBlocks blocks = concat [threeRowsBlocks blocks row | row <- [3,6,9]]
-
-threeRowsBlocks blocks row = [concat [drop (x-3) (take x y)
-                                      | y <- (drop (row-3)
-                                              (take row blocks))]
-                             | x <- [3,6,9]]
 -------------------------------------------------------------------------------
 
 -- E.
@@ -146,12 +136,21 @@ threeRowsBlocks blocks row = [concat [drop (x-3) (take x y)
 type Pos = (Int, Int)
 
 blank :: Sudoku -> Pos
-blank (Sudoku xs) = (i `div` 9, i `mod` 9)
-    where i = blank' (concat xs) 0
-          blank' xs b = if xs !! b == Nothing then b else blank' xs (b+1)
-          
-blockWithLeastBlanks :: [Block] -> Block
-blockWithLeastBlanks bs = snd $ minimum $ zip (map numBlankSpots $ bs) bs
+blank = fst . head . filterNothings . blockWithLeastBlanksIndexed . indexedBlocks
+
+
+-- [(Pos, Maybe Int)]
+blockWithLeastBlanksIndexed :: [IndexedBlock] -> IndexedBlock
+blockWithLeastBlanksIndexed bs = snd $ minimum $ zip (map numBlankSpotsIndexed $ bs') bs'
+  where bs' = filter ((/=0) . numBlankSpotsIndexed) bs
+
+filterNothings :: IndexedBlock -> IndexedBlock
+filterNothings []                   = []
+filterNothings (((a,b),Nothing):rest) = ((a,b),Nothing):(filterNothings rest)
+filterNothings (_:rest)               = filterNothings rest
+
+numBlankSpotsIndexed :: IndexedBlock -> Int
+numBlankSpotsIndexed block = sum [count ((n,m), Nothing) block | n <- [0..8],  m <- [0..8]]
 
 numBlankSpots :: Block -> Int
 numBlankSpots = count Nothing
@@ -218,9 +217,9 @@ example = Sudoku
           [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
           , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
           , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
-          , [Nothing,Nothing,Nothing,Nothing,Just 1, Just 3, Nothing,Just 2, Just 8]
-          , [Just 4, Nothing,Nothing,Just 5, Nothing,Just 2, Nothing,Nothing,Just 9]
-          , [Just 2, Just 7, Nothing,Just 4, Just 6, Nothing,Nothing,Nothing,Nothing]
+          , [Nothing,Nothing,Nothing,Just 9,Just 1, Just 3, Nothing,Just 2, Just 8]
+          , [Just 4, Nothing,Nothing,Just 5, Just 4,Just 2, Nothing,Nothing,Just 9]
+          , [Just 2, Just 7, Nothing,Just 4, Just 6, Just 9,Nothing,Nothing,Nothing]
           , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
           , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
           , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
