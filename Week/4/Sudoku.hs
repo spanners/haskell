@@ -84,6 +84,22 @@ instance Arbitrary Sudoku where
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
 
+
+newtype Filled = Filled Sudoku
+
+
+fullCell :: Gen (Maybe Int)
+fullCell = do x <- elements [1..9]
+              return $ Just x
+
+instance Arbitrary Filled where
+    arbitrary =
+        do rs <- sequence [ sequence [ fullCell | j <- [1..9] ] | i <- [1..9] ] 
+           return (Filled (Sudoku rs))
+
+instance Show Filled where
+    show (Filled s) = show s
+
 -----------------------------------------------------------------------------
 
 -- D.
@@ -138,6 +154,11 @@ type Pos = (Int, Int)
 blank :: Sudoku -> Pos
 blank = fst . head . filterNothings . blockWithLeastBlanksIndexed . indexedBlocks
 
+
+prop_injectBlank :: Filled -> Int -> Int  -> Bool
+prop_injectBlank (Filled s) x y = blank (update s (x', y') Nothing) == (x', y')
+    where x' = x `mod` 9
+          y' = y `mod` 9
 
 -- [(Pos, Maybe Int)]
 blockWithLeastBlanksIndexed :: [IndexedBlock] -> IndexedBlock
