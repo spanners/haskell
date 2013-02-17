@@ -154,11 +154,31 @@ type Pos = (Int, Int)
 blank :: Sudoku -> Pos
 blank = fst . head . filterNothings . blockWithLeastBlanksIndexed . indexedBlocks
 
-
 prop_injectBlank :: Filled -> Int -> Int  -> Bool
 prop_injectBlank (Filled s) x y = blank (update s (x', y') Nothing) == (x', y')
     where x' = x `mod` 9
           y' = y `mod` 9
+
+prop_findAllBlanks :: Filled -> [Pos] -> Bool
+prop_findAllBlanks (Filled s) poss = True --injectThings injected 
+    where poss' = ((map modPos) . take 10 . nub) poss
+          modPos (x, y) = (x `mod` 9, y `mod` 9)
+          injected = injectThings s poss' Nothing
+
+findAllBlanks s = undefined
+
+injectThings s [] thing = s
+injectThings s (b:bs) thing = injectThings (update s b thing) bs thing
+
+isPermutation :: Eq a => [a] -> [a] -> Bool
+isPermutation a b = a `elem` (permutations b)
+
+{-
+11:15 <@Iceland_jack> you can also take a filled grid and inject n blanks at random locations
+11:15 <+SwashBuckla> that's one test
+11:16 <+SwashBuckla> ah but I don't know what blank should get found by the blank finder then
+11:16 <@Iceland_jack> then make sure your blank finder finds them all (possbily filling the blanks after each successful find)
+-}
 
 -- [(Pos, Maybe Int)]
 blockWithLeastBlanksIndexed :: [IndexedBlock] -> IndexedBlock
