@@ -4,13 +4,14 @@ import Test.QuickCheck
 import Data.List
 import Data.Char
 import Data.Maybe
+import Test.QuickCheck.Instances.List
 
 -------------------------------------------------------------------------
 
 -- A.
 
 data Sudoku = Sudoku { rows :: [[Maybe Int]] }
- deriving Eq
+ deriving (Show,Eq)
 
 -- allBlankSudoku is a sudoku with just blanks
 allBlankSudoku :: Sudoku
@@ -44,14 +45,15 @@ isSolved sud = isSudoku sud
 
 -- B.
 
+{-
 instance Show Sudoku where
-  show = showSudoku
+  show = show Sudoku
     where    
       showSudoku (Sudoku board) = unlines $ map (map showCell) board
         where
           showCell (Just n) = (head . show) n
           showCell (Nothing) = '.'
-
+-}
 -- readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
 readSudoku :: FilePath -> IO Sudoku
@@ -159,19 +161,34 @@ prop_injectBlank (Filled s) x y = blank (update s (x', y') Nothing) == (x', y')
     where x' = x `mod` 9
           y' = y `mod` 9
 
-prop_findAllBlanks :: Filled -> [Pos] -> Bool
-prop_findAllBlanks (Filled s) poss = True --injectThings injected 
-    where poss' = ((map modPos) . take 10 . nub) poss
-          modPos (x, y) = (x `mod` 9, y `mod` 9)
-          injected = injectThings s poss' Nothing
+prop_findAllBlanks :: Filled -> [Pos] -> Property
+prop_findAllBlanks (Filled s) ps = ps /= [] ==> 
+                                     sort (findAllBlanks (foo s ps')) ==  sort ps' 
+                                         where 
+					   ps' = select 10 ps
 
-findAllBlanks s = undefined
+data PosList = PosList [Pos]
 
-injectThings s [] thing = s
-injectThings s (b:bs) thing = injectThings (update s b thing) bs thing
+instance Arbitrary PosList where
+  arbitrary = 
+    do
+      x <- arbitrary
+      y <- arbitrary
+      return infiniteList $ PosList $ (x `mod` 9, y `mod` 9)
 
-isPermutation :: Eq a => [a] -> [a] -> Bool
-isPermutation a b = a `elem` (permutations b)
+select n = (nub . (map modPos) . nub . take n)
+modPos (x, y) = (x `mod` 9, y `mod` 9)
+foo s ps' = updatePoss s ps' Nothing
+
+
+findAllBlanks :: Sudoku -> [Pos]
+
+findAllBlanks s | isSolved s = []
+                | otherwise  = poop:(findAllBlanks (update s poop (Just 1)))
+    where poop = blank s
+
+updatePoss s []     item = s
+updatePoss s (p:ps) item = updatePoss (update s p item) ps item
 
 {-
 11:15 <@Iceland_jack> you can also take a filled grid and inject n blanks at random locations
