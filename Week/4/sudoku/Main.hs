@@ -131,7 +131,7 @@ pairs xs ys = map (flip map xs . (,)) ys
 
 isOkayBlock :: IndexedBlock -> Bool
 isOkayBlock b = b' == nub b'
-  where b' = filter ((/=Nothing) . snd) b
+  where b' = filter (/=Nothing) (map snd b)
 
 threeByThrees s = concat [threeRows s row | row <- [3,6,9]] 
                   
