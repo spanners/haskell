@@ -1,6 +1,9 @@
+{-# LANGUAGE TemplateHaskell #-} -- for running quickCheckAll
+
 module Sudoku where
 
 import Test.QuickCheck
+import Test.QuickCheck.All
 import Data.List
 import Data.Char
 import Data.Maybe
@@ -28,13 +31,18 @@ isSudoku s =  and[length r == 9 && and[isValue x | x <- r] | r <- rows s]
 isSolved :: Sudoku -> Bool
 isSolved (Sudoku s) = notElem Nothing (concat s)
 
+prop_isBlankSudoku = isSudoku (Sudoku []) == False
+prop_blankIsSudoku = isSudoku allBlankSudoku == True
+prop_example = isSudoku example == True
+prop_tailExample = isSudoku (Sudoku (tail (rows example))) == False
+
 -------------------------------------------------------------------------
 
 -- B.
 
 
 instance Show Sudoku where
-  show (Sudoku s) = show s --Sudoku
+  show = showSudoku
     where    
       showSudoku (Sudoku board) = unlines $ map (map showCell) board
         where
@@ -186,7 +194,8 @@ numBlanks block = length $ filter ((==Nothing) . snd) block
 
 prop_replaceThing :: Eq a => [a] -> (Int, a) -> Property
 prop_replaceThing ls (n, c) = ls /= [] ==>
-                              c == (ls !!= (n,c)) !! (n `mod` (length ls))
+                              c == (ls !!= (n',c)) !! n'
+  where n' = n `mod` (length ls)
 
 prop_update :: Sudoku -> Pos -> Maybe Int -> Bool
 prop_update s (a,b) i = (rows (update s (a', b') i)) !! a' !! b' == i
@@ -223,14 +232,17 @@ prop_SolveSound s =
 --------------------------------------------------------------------------------------
 
 example :: Sudoku
-example = Sudoku
-          [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
-          , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
-          , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
-          , [Nothing,Nothing,Nothing,Just 9,Just 1, Just 3, Nothing,Just 2, Just 8]
-          , [Just 4, Nothing,Nothing,Just 5, Just 4,Just 2, Nothing,Nothing,Just 9]
-          , [Just 2, Just 7, Nothing,Just 4, Just 6, Just 9,Nothing,Nothing,Nothing]
-          , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
-          , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
-          , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
-          ]
+example =
+    Sudoku
+      [ [Just 3, Just 6, Nothing,Nothing,Just 7, Just 1, Just 2, Nothing,Nothing]
+      , [Nothing,Just 5, Nothing,Nothing,Nothing,Nothing,Just 1, Just 8, Nothing]
+      , [Nothing,Nothing,Just 9, Just 2, Nothing,Just 4, Just 7, Nothing,Nothing]
+      , [Nothing,Nothing,Nothing,Nothing,Just 1, Just 3, Nothing,Just 2, Just 8]
+      , [Just 4, Nothing,Nothing,Just 5, Nothing,Just 2, Nothing,Nothing,Just 9]
+      , [Just 2, Just 7, Nothing,Just 4, Just 6, Nothing,Nothing,Nothing,Nothing]
+      , [Nothing,Nothing,Just 5, Just 3, Nothing,Just 8, Just 9, Nothing,Nothing]
+      , [Nothing,Just 8, Just 3, Nothing,Nothing,Nothing,Nothing,Just 6, Nothing]
+      , [Nothing,Nothing,Just 7, Just 6, Just 9, Nothing,Nothing,Just 4, Just 3]
+      ]
+      
+runTests = $(quickCheckAll)
