@@ -59,7 +59,9 @@ cell = frequency [(9,return Nothing)
 
 instance Arbitrary Sudoku where
   arbitrary =
-    do rows <- sequence [ sequence [ cell | j <- [1..9] ] | i <- [1..9] ]
+    do rows <- sequence [ sequence [ cell 
+                                   | j <- [1..9] ] 
+                        | i <- [1..9] ]
        return (Sudoku rows)
 
 
@@ -71,14 +73,28 @@ prop_Sudoku = isSudoku
 type Block = [Maybe Int]
 
 isBlockOkay :: Block -> Bool
-isBlockOkay b = length ls == length (nub ls)
-    where ls = [a | a <- b, isJust a]
+isBlockOkay block = values == nub values 
+  where values = catMaybes block
 
 blocks :: Sudoku -> [Block]
 blocks (Sudoku board) = board ++ transpose board ++ threeByThrees board
 
 isOkay :: Sudoku -> Bool
 isOkay s = and [isBlockOkay b | b <- blocks s]
+
+newtype RBlock = RB Block
+
+instance Show RBlock where
+  show (RB b) = show b
+  
+instance Arbitrary RBlock where
+  arbitrary = do
+    x <- arbitrary
+    RB n <- arbitrary
+    return $ RB $ take 9 $ Just ((x `mod` 9)+1) : n
+
+prop_isBlockOkay :: RBlock -> Bool
+prop_isBlockOkay (RB b) = isBlockOkay (nub b)
 
 prop_blocks :: Sudoku -> Bool
 prop_blocks s =  length [True | x <- blocks s, length x == 9] == 27
@@ -91,10 +107,10 @@ type IndexedBlock = [(Pos, Maybe Int)]
 
 blank :: Sudoku -> Pos
 blank = fst 
-         . head
-         . filter ((==Nothing) . snd)
-         . leastBlanks
-         . blocks'
+        . head
+        . filter ((==Nothing) . snd)
+        . leastBlanks
+        . blocks'
          
 leastBlanks :: [IndexedBlock] -> IndexedBlock
 leastBlanks bs = (snd . minimum) $ zip (map numBlanks bs') bs'
