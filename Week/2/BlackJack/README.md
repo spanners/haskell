@@ -20,4 +20,4 @@ clearer overview of your testing coverage and documentation.
 (See the [Makefile][] for the implementation of these features.)
 
 [Lab2]: http://www.cse.chalmers.se/edu/year/2012/course/TDA452/labs/2/
-[Makefile]: https://github.com/spanners/haskell/blob/master/BlackJack/Makefile
+[Makefile]: https://github.com/spanners/haskell/blob/master/Week/2/BlackJack/Makefile
