@@ -1,5 +1,4 @@
-haskell
-=======
+# haskell-course-tda-453
 
 Lecture code and Lab solutions from Introduction to Functional Programming 2012, Chalmers University
 
